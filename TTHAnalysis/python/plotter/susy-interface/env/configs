@@ -308,3 +308,49 @@ BEGIN::crlnt
   wVarsFS     #:= {lepSF    : leptonSF(getLepSF(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], 1, 1), getLepSF(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], 1, 1), getLepSF(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], 1, 1)) ; leptonSF(getLepSF(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], 1, -1), getLepSF(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], 1, -1), getLepSF(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], 1, -1)) }
   wVarsFS     #:= {lepSFFS  : leptonSFFS(getLepSFFS(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], 1, 1), getLepSFFS(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], 1, 1), getLepSFFS(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], 1, 1)) ; leptonSF(getLepSFFS(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], 1, -1), getLepSFFS(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], 1, -1), getLepSFFS(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], 1, -1)) }
 ENDDEF
+
+BEGIN::RA7
+  firstCut     := alwaystrue
+  mcafile      := susy-ra7/mca_FSR_ra7.txt
+#  mcafile      := susy-ewkino/3l/mca_ewkino.txt
+  cutfile      := susy-ra7/cuts_ra7.txt
+  plotfile     := susy-ra7/plots_ra7.txt
+  sysfile      := susy-ewkino/systs_ewkino.txt
+  friendConn  #:= {leptonJetReCleanerSusyRA7   :                             }
+  friendConn  #:= {leptonBuilderRA7            : leptonJetReCleanerSusyRA7   }
+# friendConn  #:= {eventBTagWeight             :                             }
+  friendFile  #:= {leptonJetReCleanerSusyRA7   : leptonJetReCleaner.py       }
+  friendFile  #:= {leptonBuilderRA7            : leptonBuilderRA7.py         }
+# friendFile  #:= {eventBTagWeight             : eventBTagWeight.py          }
+  sfriends    +:= leptonJetReCleanerSusyRA7;leptonBuilderEWK;eventBTagWeight
+  friends     +:=
+  macros      +:= susy-ra7/functionsRA7.cc
+  mccs        +:= susy-ra7/mcc_triggerdefs.txt; susy-ra7/mcc_varsub_ra7.txt
+  alias       #:= {wBG        : puw_nInt_Moriond(nTrueInt) * leptonSF_ra7(LepSel1_pdgId,LepSel1_conePt,LepSel1_eta) * leptonSF_ra7(LepSel2_pdgId,LepSel2_conePt,LepSel2_eta) * leptonSF_ra7(LepSel3_pdgId,LepSel3_conePt,LepSel3_eta) }
+  alias       #:= {wFS   : leptonSFFS(getLepSFFS(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], LepSel_isTight[0]), getLepSFFS(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], LepSel_isTight[1]), getLepSFFS(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], LepSel_isTight[2]))}
+  weight       := wBG
+  weightFS     := wFS
+  flags       +:=
+  flagsDumps  +:=
+  flagsEffs   +:=
+  flagsLimits +:=
+  flagsPlots  +:= --perBin --ratioOffset 0.03 --print C,png,pdf,txt
+  flagsPlots  +:= --plotgroup fakes_appldata+=promptsub
+  flagsScans  +:= --noNegVar --hardZero
+  flagsScans  +:= --plotgroup fakes_appldata+=promptsub --plotgroup fakes_appldata_ewk_Up+=promptsub_ewk_Up --plotgroup fakes_appldata_ewk_Dn+=promptsub_ewk_Dn
+  flagsScans  +:= --ignore promptsub --ignore promptsub_ewk_Up --ignore promptsub_ewk_Dn 
+  flagsScans  +:= --neglist promptsub --neglist promptsub_ewk_Up --neglist promptsub_ewk_Dn 
+  jec          := jec
+  met          := met
+  q2acc        := q2acc
+  mcaWeightFS  := Sum$(abs(Jet_eta)<2.5 && Jet_chHEF<0.1  && Jet_mcPt<8)==0
+  frFilesFS    := susy-ewkino/3l/fakerate_standard_central.txt;susy-ewkino/3l/fakerate_load_isprompt.txt;susy-ewkino/3l/fakerate_filters_fastsim.txt
+  frFilesFSJec := susy-ewkino/3l/fakerate_standard_central.txt;susy-ewkino/3l/fakerate_standard_jecUp.txt;susy-ewkino/3l/fakerate_standard_jecDn.txt
+  frFilesFSMet := susy-ewkino/3l/fakerate_standard_central.txt;susy-ewkino/3l/fakerate_genMET_central.txt 
+  wVarsFSJec   := 1;1;1
+  wVarsFSMet   := 1;1
+  wVarsFS     #:= {bTagFS   : eventBTagSF_up_correlated/eventBTagSF ; eventBTagSF_down_correlated/eventBTagSF }
+  wVarsFS     #:= {puw      : puw_nInt_ICHEP(nTrueInt,1) ; puw_nInt_ICHEP(nTrueInt,-1) } 
+  wVarsFS     #:= {lepSF    : leptonSF(getLepSF(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], LepSel_isTight[0], 0, 1), getLepSF(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], LepSel_isTight[1], 0, 1), getLepSF(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], LepSel_isTight[2], 0, 1)) ; leptonSF(getLepSF(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], LepSel_isTight[0], 0, -1), getLepSF(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], LepSel_isTight[1], 0, -1), getLepSF(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], LepSel_isTight[2], 0, -1)) }
+  wVarsFS     #:= {lepSFFS  : leptonSFFS(getLepSFFS(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], LepSel_isTight[0], 0, 1), getLepSFFS(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], LepSel_isTight[1], 0, 1), getLepSFFS(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], LepSel_isTight[2], 0, 1)) ; leptonSF(getLepSFFS(LepSel_pt[0], LepSel_eta[0], LepSel_pdgId[0], LepSel_isTight[0], 0, -1), getLepSFFS(LepSel_pt[1], LepSel_eta[1], LepSel_pdgId[1], LepSel_isTight[1], 0, -1), getLepSFFS(LepSel_pt[2], LepSel_eta[2], LepSel_pdgId[2], LepSel_isTight[2], 0, -1)) }
+ENDDEF

@@ -1,20 +1,31 @@
 alwaystrue: 1
+#blinding  : !isData || (run <= 276811 || (run>=278820 && run<=279931))
 trigger: Triggers_ee || Triggers_mm || Triggers_em
+metfilters: $DATA{METfilters} $MC{1}
 cleanup: minMllAFAS > 12
-trilep: nLepFO>=3
-pt2010: LepGood1_conePt>20 && LepGood2_conePt>10 && (abs(LepGood2_pdgId)!=11 || LepGood2_conePt>15)
-MediumID:  if3(abs(LepGood1_pdgId)==13,LepGood1_mediumMuonId>0, 1) && if3(abs(LepGood2_pdgId)==13,LepGood2_mediumMuonId>0, 1) && if3(abs(LepGood3_pdgId)==13,LepGood3_mediumMuonId>0, 1)
-tightMVAM : (LepGood1_mvaSUSY>-0.20+(0.20+0.50)*(abs(LepGood1_pdgId)==11)) && (LepGood2_mvaSUSY>-0.20+(0.20+0.50)*(abs(LepGood2_pdgId)==11)) && (LepGood3_mvaSUSY>-0.20+(0.20+0.50)*(abs(LepGood3_pdgId)==11))
-##TTT: LepGood1_isTight && LepGood2_isTight && LepGood3_isTight
-2lnotfromZ_12: abs(mass_2(LepGood1_pt,LepGood1_eta,LepGood1_phi,LepGood1_mass, LepGood2_pt,LepGood2_eta,LepGood2_phi,LepGood2_mass)-91.2) > 10
-2lnotfromZ_13: abs(mass_2(LepGood1_pt,LepGood1_eta,LepGood1_phi,LepGood1_mass, LepGood3_pt,LepGood3_eta,LepGood3_phi,LepGood3_mass)-91.2) > 10
-2lnotfromZ_23: abs(mass_2(LepGood2_pt,LepGood2_eta,LepGood2_phi,LepGood2_mass, LepGood3_pt,LepGood3_eta,LepGood3_phi,LepGood3_mass)-91.2) > 10
-3lfromconv: abs(mass_3_cheap(LepGood1_pt,LepGood1_eta,LepGood2_pt,LepGood2_eta,deltaPhi(LepGood1_phi,LepGood2_phi),LepGood3_pt,LepGood3_eta,deltaPhi(LepGood1_phi,LepGood3_phi))-91.2) < 30
-met: met_pt < 50							    
-0bjetM: nBJetMedium25 == 0
+trilep: nLepFO==3 && abs(LepGood1_charge+LepGood2_charge+LepGood3_charge) < 2
+pt251510_el252015: LepGood1_conePt>25 && if3(abs(LepGood2_pdgId)==13, LepGood2_conePt>15, LepGood2_conePt>20) && if3(abs(LepGood3_pdgId)==13, LepGood3_conePt>10, LepGood3_conePt>15) ; Disable=True
+pt201010: LepGood1_conePt>20 && LepGood2_conePt>10 && LepGood3_conePt>10
+muee: !(abs(LepGood1_pdgId)==13 && abs(LepGood2_pdgId)==11 && abs(LepGood3_pdgId)==11 ) || LepGood1_conePt>25
+#tightCharge : LepGood1_tightCharge > 1 && LepGood2_tightCharge > 1 && LepGood3_tightCharge > 1
+#tauveto : nLepTight_Recl == 3 && nTightTauSel==0
+tauveto :  abs(LepGood1_pdgId)<14 && abs(LepGood2_pdgId)<14 && abs(LepGood3_pdgId)<14
+# && nTightTauSel_Recl==0 
+trileptonmedium : Lep1_isMedium && Lep2_isMedium && Lep3_isMedium ; Disable=True
+trileptontight : LepGood1_isTight && LepGood2_isTight && LepGood3_isTight
+ossfCleaning: nOSSF_3l>0 && abs(mll_3l -91.2) >15
+met: met_pt < 50
+zerobjetM: nBJetMedium40==0 ; Disable=True
+
+# Exclusive final states: cuts to be enabled with -E
+eee : pdgid3l == 1331 ; Disable=True
+mmm : pdgid3l == 2197 ; Disable=True
+eem : pdgid3l == 1573 ; Disable=True
+mme : pdgid3l == 1859 ; Disable=True
 
 # some cuts that are off by default but can be turned on with -E
 
+pt201010: LepGood1_conePt>20 && LepGood2_conePt>10 && (abs(LepGood2_pdgId)!=11 || LepGood2_conePt>15) && LepGood3_conePt>10 && (abs(LepGood3_pdgId)!=11 || LepGood3_conePt>15) ; Disable=True ; Disable=True
 tightMVAVL: (LepGood1_mvaSUSY>-0.90+(0.90-0.30)*(abs(LepGood1_pdgId)==11)) && (LepGood2_mvaSUSY>-0.90+(0.90-0.30)*(abs(LepGood2_pdgId)==11)) && (LepGood3_mvaSUSY>-0.90+(0.90-0.30)*(abs(LepGood3_pdgId)==11)); Disable=True
 tightMVAL : (LepGood1_mvaSUSY>-0.60+(0.60+0.25)*(abs(LepGood1_pdgId)==11)) && (LepGood2_mvaSUSY>-0.60+(0.60+0.25)*(abs(LepGood2_pdgId)==11)) && (LepGood3_mvaSUSY>-0.60+(0.60+0.25)*(abs(LepGood3_pdgId)==11)); Disable=True
 tightMVAM : (LepGood1_mvaSUSY>-0.20+(0.20+0.50)*(abs(LepGood1_pdgId)==11)) && (LepGood2_mvaSUSY>-0.20+(0.20+0.50)*(abs(LepGood2_pdgId)==11)) && (LepGood3_mvaSUSY>-0.20+(0.20+0.50)*(abs(LepGood3_pdgId)==11)); Disable=True
@@ -39,3 +50,21 @@ mtmin100: min(mt_2(LepGood1_pt,LepGood1_phi,met_pt,met_phi),mt_2(LepGood2_pt,Lep
 ptdil0: pt_2(LepGood1_pt, LepGood1_phi, LepGood2_pt, LepGood2_phi) < 50 ; Disable=True
 ptdil50: pt_2(LepGood1_pt, LepGood1_phi, LepGood2_pt, LepGood2_phi) > 50 && pt_2(LepGood1_pt, LepGood1_phi, LepGood2_pt, LepGood2_phi) < 100 ; Disable=True
 ptdil100: pt_2(LepGood1_pt, LepGood1_phi, LepGood2_pt, LepGood2_phi) > 100 ; Disable=True
+twolnotfromZ_12: if3( LepGood1_pdgId == -LepGood2_pdgId, abs(mass_2(LepGood1_conePt,LepGood1_eta,LepGood1_phi,LepGood1_mass, LepGood2_conePt,LepGood2_eta,LepGood2_phi,LepGood2_mass)-91.2) > 15, 1 ) ; Disable=True
+twolnotfromZ_13: if3( LepGood2_pdgId == -LepGood3_pdgId, abs(mass_2(LepGood1_conePt,LepGood1_eta,LepGood1_phi,LepGood1_mass, LepGood3_conePt,LepGood3_eta,LepGood3_phi,LepGood3_mass)-91.2) > 15, 1 ) ; Disable=True
+twolnotfromZ_23: if3( LepGood3_pdgId == -LepGood3_pdgId, abs(mass_2(LepGood2_conePt,LepGood2_eta,LepGood2_phi,LepGood2_mass, LepGood3_conePt,LepGood3_eta,LepGood3_phi,LepGood3_mass)-91.2) > 15, 1 ) ; Disable=True
+twolnotfromZ_l75_12: if3( LepGood1_pdgId == -LepGood2_pdgId, mass_2(LepGood1_conePt,LepGood1_eta,LepGood1_phi,LepGood1_mass, LepGood2_conePt,LepGood2_eta,LepGood2_phi,LepGood2_mass) < 75. , 1 ) ; Disable=True
+twolnotfromZ_l75_13: if3( LepGood2_pdgId == -LepGood3_pdgId, mass_2(LepGood1_conePt,LepGood1_eta,LepGood1_phi,LepGood1_mass, LepGood3_conePt,LepGood3_eta,LepGood3_phi,LepGood3_mass) < 75. , 1 ) ; Disable=True
+twolnotfromZ_l75_23: if3( LepGood3_pdgId == -LepGood3_pdgId, mass_2(LepGood2_conePt,LepGood2_eta,LepGood2_phi,LepGood2_mass, LepGood3_conePt,LepGood3_eta,LepGood3_phi,LepGood3_mass) < 75. , 1 ) ; Disable=True
+3lfromconv: abs(mass_3_cheap(LepGood1_pt,LepGood1_eta,LepGood2_pt,LepGood2_eta,deltaPhi(LepGood1_phi,LepGood2_phi),LepGood3_pt,LepGood3_eta,deltaPhi(LepGood1_phi,LepGood3_phi))-91.2) < 30 ; Disable=True
+
+
+
+## dilep: nLepFO==2
+## cleanup: minMllAFAS > 12
+## pt : LepGood1_conePt>25 && LepGood2_conePt > 15
+## onz: abs(mass_2(LepGood1_conePt,LepGood1_eta,LepGood1_phi,LepGood1_mass,LepGood2_conePt,LepGood2_eta,LepGood2_phi,LepGood2_mass) -91.2) < 30
+## ossf : LepGood1_pdgId == -LepGood2_pdgId
+## eee : abs(LepGood1_pdgId*LepGood2_pdgId) == 121 ; Disable=True
+## mmm : abs(LepGood1_pdgId*LepGood2_pdgId) == 169 ; Disable=True
+## zerobjetM: nBJetLoose25 == 0

@@ -187,7 +187,7 @@ def doShadedUncertainty(h):
     ret.Draw("PE2 SAME")
     return ret
 
-def doDataNorm(pspec,pmap):
+def doDataNorm(pspec,pmap,cumulative=False):
     if "data" not in pmap: return None
     total = sum([v.Integral() for k,v in pmap.iteritems() if k != 'data' and not hasattr(v,'summary')])
     sig = pmap["data"].Clone(pspec.name+"_data_norm")
@@ -197,10 +197,10 @@ def doDataNorm(pspec,pmap):
     sig.SetLineStyle(2)
     if sig.Integral() > 0:
         sig.Scale(total/sig.Integral())
-    sig.Draw("HIST SAME")
+    sig.Draw("HIST SAME") if not cumulative else sig.GetCumulative().Draw("HIST SAME")
     return sig
 
-def doStackSignalNorm(pspec,pmap,individuals,extrascale=1.0,norm=True):
+def doStackSignalNorm(pspec,pmap,individuals,extrascale=1.0,norm=True,cumulative=False):
     total = sum([v.Integral() for k,v in pmap.iteritems() if k != 'data' and not hasattr(v,'summary')])
     if options.noStackSig:
         total = sum([v.Integral() for k,v in pmap.iteritems() if not hasattr(v,'summary') and mca.isBackground(k) ])
@@ -212,7 +212,7 @@ def doStackSignalNorm(pspec,pmap,individuals,extrascale=1.0,norm=True):
             sig.SetLineColor(sig.GetFillColor())
             sig.SetLineWidth(4)
             if norm: sig.Scale(total*extrascale/sig.Integral())
-            sig.Draw("HIST SAME")
+            sig.Draw("HIST SAME") if not cumulative else sig.GetCumulative().Draw("HIST SAME")
             sigs.append(sig)
         return sigs
     else:
@@ -226,10 +226,10 @@ def doStackSignalNorm(pspec,pmap,individuals,extrascale=1.0,norm=True):
         sig.SetLineWidth(4)
         if norm and sig.Integral() > 0:
             sig.Scale(total*extrascale/sig.Integral())
-        sig.Draw("HIST SAME")
+        sig.Draw("HIST SAME") if not cumulative else sig.GetCumulative().Draw("HIST SAME")
         return [sig]
 
-def doStackSigScaledNormData(pspec,pmap):
+def doStackSigScaledNormData(pspec,pmap,cumulative=False):
     if "data"       not in pmap: return (None,-1.0)
     if "signal"     not in pmap: return (None,-1.0)
     data = pmap["data"]
@@ -246,7 +246,7 @@ def doStackSigScaledNormData(pspec,pmap):
     sig.SetLineColor(206)
     sig.SetLineWidth(3)
     sig.SetLineStyle(2)
-    sig.Draw("HIST SAME")
+    sig.Draw("HIST SAME") if not cumulative else sig.GetCumulative().Draw("HIST SAME")
     return (sig,sf)
 
 def doScaleSigNormData(pspec,pmap,mca):
@@ -392,8 +392,9 @@ def doNormFit(pspec,pmap,mca,saveScales=False):
     pspec.setLog("Fitting", fitlog)
     
 
-def doRatioHists(pspec,pmap,total,totalSyst,maxRange,fixRange=False,fitRatio=None,errorsOnRef=True,ratioNums="signal",ratioDen="background",ylabel="Data/pred.",doWide=False,showStatTotLegend=False):
+def doRatioHists(pspec,pmap,total,totalSyst,maxRange,fixRange=False,fitRatio=None,errorsOnRef=True,ratioNums="signal",ratioDen="background",ylabel="Data/pred.",doWide=False,showStatTotLegend=False,cumulative=False):
     numkeys = [ "data" ]
+
     if "data" not in pmap: 
         if ratioDen in pmap or ratioDen=="total":
         #if len(pmap) >= 4 and ratioDen in pmap:
@@ -415,14 +416,14 @@ def doRatioHists(pspec,pmap,total,totalSyst,maxRange,fixRange=False,fitRatio=Non
             # then we can overwrite total with background
             numkey = 'signal'
             if ratioDen!="total":
-                total     = pmap[ratioDen]
-                totalSyst = pmap[ratioDen]
+                total     = pmap[ratioDen] if not cumulative else pmap[ratioDen].GetCumulative()
+                totalSyst = pmap[ratioDen] if not cumulative else pmap[ratioDen].GetCumulative()
         else:    
             return (None,None,None,None)
     ratios = [] #None
     for numkey in numkeys:
         if hasattr(pmap[numkey], 'poissonGraph'):
-            ratio = pmap[numkey].poissonGraph.Clone("data_div"); 
+            ratio = pmap[numkey].poissonGraph.Clone("data_div")
             for i in xrange(ratio.GetN()):
                 x    = ratio.GetX()[i]
                 div  = total.GetBinContent(total.GetXaxis().FindBin(x))
@@ -431,11 +432,11 @@ def doRatioHists(pspec,pmap,total,totalSyst,maxRange,fixRange=False,fitRatio=Non
                                        ratio.GetErrorYlow(i)/div  if div > 0 else 0, 
                                        ratio.GetErrorYhigh(i)/div if div > 0 else 0) 
         else:
-            ratio = pmap[numkey].Clone("data_div"); 
+            ratio = pmap[numkey].Clone("data_div") if not cumulative else pmap[numkey].GetCumulative().Clone("data_div"); 
             ratio.Divide(total)
         ratios.append(ratio)
-    unity  = totalSyst.Clone("sim_div");
-    unity0 = total.Clone("sim_div");
+    unity  = totalSyst.Clone("sim_div")
+    unity0 = total.Clone("sim_div")
     rmin, rmax =  1,1
     for b in xrange(1,unity.GetNbinsX()+1):
         e,e0,n = unity.GetBinError(b), unity0.GetBinError(b), unity.GetBinContent(b)
@@ -761,8 +762,8 @@ class PlotMaker:
                 #
                 stack = ROOT.THStack(pspec.name+"_stack",pspec.name)
                 hists = [v for k,v in pmap.iteritems() if k != 'data']
-                total = hists[0].Clone(pspec.name+"_total"); total.Reset()
-                totalSyst = hists[0].Clone(pspec.name+"_totalSyst"); totalSyst.Reset()
+                total = hists[0].Clone(pspec.name+"_total") if not self._options.cumulative else hists[0].GetCumulative().Clone(pspec.name+"_total"); total.Reset()
+                totalSyst = hists[0].Clone(pspec.name+"_totalSyst") if not self._options.cumulative else hists[0].GetCumulative().Clone(pspec.name+"_totalSyst"); totalSyst.Reset()
                 if self._options.plotmode == "norm": 
                     if 'data' in pmap:
                         total.GetYaxis().SetTitle(total.GetYaxis().GetTitle()+" (normalized)")
@@ -795,8 +796,8 @@ class PlotMaker:
                 if outputName == None: outputName = pspec.name
                 stack = ROOT.THStack(outputName+"_stack",outputName)
                 hists = [v for k,v in pmap.iteritems() if k != 'data']
-                total = hists[0].Clone(outputName+"_total"); total.Reset()
-                totalSyst = hists[0].Clone(outputName+"_totalSyst"); totalSyst.Reset()
+                total = hists[0].Clone(outputName+"_total") if not self._options.cumulative else hists[0].GetCumulative().Clone(outputName+"_total") ; total.Reset()
+                totalSyst = hists[0].Clone(outputName+"_totalSyst") if not self._options.cumulative else hists[0].GetCumulative().Clone(outputName+"_totalSyst"); totalSyst.Reset()
 
                 if plotmode == "norm": 
                     if 'data' in pmap:
@@ -826,9 +827,20 @@ class PlotMaker:
                             plot.SetLineColor(plot.GetFillColor())
                             continue 
                         if plotmode == "stack" or (plotmode=="closure" and not p in [options.numerator]):
-                            stack.Add(plot)
-                            total.Add(plot)
-                            totalSyst.Add(plot)
+                            cumPlot = plot
+                            if self._options.cumulative:
+                                cumPlot=plot.GetCumulative()
+                                weightArray=plot.GetSumw2()
+                                for b in xrange(1,plot.GetNbinsX()+1):
+                                    cumPlot.SetBinError(b,sqrt(cumPlot.GetBinContent(b)))
+                                    #weightArray[b+1] = weightArray[b]+weightArray[b+1]
+
+                            stack.Add(plot if not self._options.cumulative else cumPlot)
+                            total.Add(plot if not self._options.cumulative else cumPlot)
+                            totalSyst.Add(plot if not self._options.cumulative else cumPlot)
+                            #if self._options.cumulative:
+                            #    total.Sumw2()
+                            #    totalSyst.Sumw2()
                             if mca.getProcessOption(p,'NormSystematic',0.0) > 0:
                                 syst = mca.getProcessOption(p,'NormSystematic',0.0)
                                 if "TH1" in plot.ClassName():
@@ -841,7 +853,7 @@ class PlotMaker:
                             if plotmode == "norm" and (plot.ClassName()[:2] == "TH"):
                                 ref = pmap['data'].Integral() if 'data' in pmap else 1.0
                                 plot.Scale(ref/plot.Integral())
-                            stack.Add(plot)
+                            stack.Add(plot if not self._options.cumulative else plot.GetCumulative())
                             total.SetMaximum(max(total.GetMaximum(),1.3*plot.GetMaximum()))
                         if self._options.errors and (not plotmode in ["stack","closure"] or (plotmode=="closure" and p==self._options.numerator)):
                             plot.SetMarkerColor(plot.GetFillColor())
@@ -954,11 +966,11 @@ class PlotMaker:
                     reMax(total,pmap[options.numerator],islog,doWide=doWide)
                 if 'data' in pmap: 
                     if options.poisson and not is2D:
-                        pdata = getDataPoissonErrors(pmap['data'], False, True)
+                        pdata = getDataPoissonErrors(pmap['data'], False, True) if not self._options.cumulative else getDataPoissonErrors(pmap['data'].GetCumulative(), False, True)
                         pdata.Draw("PZ SAME")
                         pmap['data'].poissonGraph = pdata ## attach it so it doesn't get deleted
                     else:
-                        pmap['data'].Draw("E SAME")
+                        pmap['data'].Draw("E SAME") if not self._options.cumulative else pmap['data'].GetCumulative().Draw("E SAME")
                     reMax(total,pmap['data'],islog,doWide=doWide)
                     if xblind[0] < xblind[1]:
                         blindbox = ROOT.TBox(xblind[0],total.GetYaxis().GetXmin(),xblind[1],total.GetMaximum())
@@ -975,7 +987,7 @@ class PlotMaker:
                 #if options.yrange: 
                 #    total.GetYaxis().SetRangeUser(options.yrange[0], options.yrange[1])
                 if options.showSigShape or options.showIndivSigShapes or options.showIndivSigs: 
-                    signorms = doStackSignalNorm(pspec,pmap,options.showIndivSigShapes or options.showIndivSigs,extrascale=options.signalPlotScale, norm=not options.showIndivSigs)
+                    signorms = doStackSignalNorm(pspec,pmap,options.showIndivSigShapes or options.showIndivSigs,extrascale=options.signalPlotScale, norm=not options.showIndivSigs) if not self._options.cumulative else doStackSignalNorm(pspec,pmap,options.showIndivSigShapes or options.showIndivSigs,extrascale=options.signalPlotScale, norm=not options.showIndivSigs, cumulative=True)
                     for signorm in signorms:
                         if outputDir: 
                             signorm.SetDirectory(outputDir); outputDir.WriteTObject(signorm)
@@ -1007,13 +1019,13 @@ class PlotMaker:
                         doSpam(options.addspam, .23, .855, .6, .895, align=12, textSize=(0.045 if doRatio else 0.033)*options.topSpamSize)
                 signorm = None; datnorm = None; sfitnorm = None
                 if options.showDatShape: 
-                    datnorm = doDataNorm(pspec,pmap)
+                    datnorm = doDataNorm(pspec,pmap,self._options.cumulative)
                     if datnorm != None:
                         if outputDir: 
                             datnorm.SetDirectory(outputDir); outputDir.WriteTObject(datnorm)
                         reMax(total,datnorm,islog,doWide=doWide)
                 if options.showSFitShape: 
-                    (sfitnorm,sf) = doStackSigScaledNormData(pspec,pmap)
+                    (sfitnorm,sf) = doStackSigScaledNormData(pspec,pmap) if not self._options.cumulative else doStackSigScaledNormData(pspec,pmap,True)
                     if sfitnorm != None:
                         if outputDir: 
                             sfitnorm.SetDirectory(outputDir); outputDir.WriteTObject(sfitnorm)
@@ -1035,7 +1047,7 @@ class PlotMaker:
                     rd = "total" if plotmode in ["closure"] else options.ratioDen
                     rdata,rnorm,rnorm2,rline = doRatioHists(pspec,pmap,total,totalSyst, maxRange=options.maxRatioRange, fixRange=options.fixRatioRange,
                                                             fitRatio=options.fitRatio, errorsOnRef=options.errorBandOnRatio, 
-                                                            ratioNums=rn, ratioDen=rd, ylabel=options.ratioYLabel, doWide=doWide, showStatTotLegend=True)
+                                                            ratioNums=rn, ratioDen=rd, ylabel=options.ratioYLabel, doWide=doWide, showStatTotLegend=True, cumulative=self._options.cumulative)
                 if makeCanvas and outputDir: outputDir.WriteTObject(c1) # should be here to include ratio pad in saved canvas
                 if self._options.printPlots:
                     for ext in self._options.printPlots.split(","):
@@ -1213,6 +1225,7 @@ def addPlotMakerOptions(parser, addAlsoMCAnalysis=True):
     parser.add_option("--printBin", dest="printBinning", type="string", default=None, help="Write 'Events/xx' instead of 'Events' on the y axis")
     parser.add_option('--env',      dest='env'         , type='string', default="", help='Set environment (currently supported: "oviedo")')
     parser.add_option('--add-histos', dest='addHistos' , type='string', action="append", nargs=2, default=[], help='File path to load and add histograms from to the ones that are newly made.')
+    parser.add_option('--cumulative', dest='cumulative', action="store_true", default=False, help="Draw the cumulative distribution for the given histogram")
 
 if __name__ == "__main__":
     from optparse import OptionParser

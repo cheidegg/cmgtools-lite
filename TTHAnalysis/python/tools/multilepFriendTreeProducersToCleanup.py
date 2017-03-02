@@ -54,7 +54,7 @@ MODULES.append( ('PUWProducer4L', PUWProducer4L) )
 
 #--- Recleaner instances
 from CMGTools.TTHAnalysis.tools.leptonChoiceRA5 import _susy2lss_lepId_CBloose,_susy2lss_lepId_loosestFO,_susy2lss_lepId_IPcuts,_susy2lss_lepConePt1015,_susy2lss_lepId_tighterFO,_susy2lss_multiIso,_susy2lss_lepId_CB,_susy2lss_idIsoEmu_cuts
-from CMGTools.TTHAnalysis.tools.leptonChoiceRA7 import _susy3l_lepId_CBloose, _susy3l_lepId_loosestFO,_susy3l_lepId_loosestFO,_susy3l_multiIso,_susy3l_lepId_CB
+from CMGTools.TTHAnalysis.tools.leptonBuilderRA7 import _susy3l_lepId_CBloose, _susy3l_lepId_loosestFO,_susy3l_lepId_loosestFO,_susy3l_multiIso,_susy3l_lepId_CB
 from CMGTools.TTHAnalysis.tools.leptonBuilderEWK import _susyEWK_lepId_CBloose, _susyEWK_lepId_IPcuts, _susyEWK_lepId_MVAFO, _susyEWK_lepId_MVAmedium, _susyEWK_tauId_CBloose, _susyEWK_tauId_CBtight
 from CMGTools.TTHAnalysis.tools.functionsTTH import _ttH_idEmu_cuts_E2
 from CMGTools.TTHAnalysis.tools.functionsEWKino import _ewkino_idEmu_cuts_E2, _ewkino_2lss_lepId_CBloose, _ewkino_2lss_lepId_FO, _ewkino_2lss_lepId_num,_ewkino_3l_lepId_FO, _ewkino_3l_lepId_num, _ewkino_2lss_lepId_IPcuts, _ewkino_leptonMVA_VT, _ewkino_leptonMVA_M
@@ -79,18 +79,17 @@ MODULES.append( ('leptonJetReCleanerSusyRA5', lambda : LeptonJetReCleaner("Mini"
 
 # updated cut-based RA7
 MODULES.append( ('leptonJetReCleanerSusyRA7', lambda : LeptonJetReCleaner("Mini", 
-                   lambda lep : lep.miniRelIso < 0.4 and _susy3l_lepId_CBloose(lep), #and (ht>300 or _susy2lss_idIsoEmu_cuts(lep)), 
-                   lambda lep : lep.pt>10 and _susy3l_lepId_loosestFO(lep) and _susy2lss_lepId_IPcuts(lep), # cuts applied on top of loose
-                   lambda lep,ht : lep.pt>10 and _susy2lss_lepId_IPcuts(lep) and _susy3l_lepId_loosestFO(lep), # cuts applied on top of loose
-                   lambda lep,ht : lep.pt>10 and _susy3l_multiIso(lep) and _susy3l_lepId_CB(lep), # cuts applied on top of loose
+                   lambda lep : lep.miniRelIso < 0.4 and _susy3l_lepId_CBloose(lep), 
+                   lambda lep : lep.pt>10 and lep.conept>10 and _susy3l_lepId_loosestFO(lep), # cuts applied on top of loose
+                   lambda lep,ht : lep.pt>10 and lep.conept>10 and _susy3l_lepId_loosestFO(lep), # cuts applied on top of loose
+                   lambda lep,ht : lep.pt>10 and lep.conept>10 and _susy3l_multiIso(lep) and _susy3l_lepId_CB(lep), # cuts applied on top of loose
                    cleanJet = lambda lep,jet,dr : dr<0.4,
                    selectJet = lambda jet: abs(jet.eta)<2.4,
                    cleanTau = lambda lep,tau,dr: dr<0.4,
-                   looseTau = lambda tau: tau.pt > 20 and abs(tau.eta)<2.3 and abs(tau.dxy) < 1000 and abs(tau.dz) < 0.2 and tau.idMVA >= 1 and tau.idDecayMode, # used in cleaning
-                   tightTau = lambda tau: tau.idMVA == 3, # on top of loose
-                   #looseTau = lambda tau: tau.pt > 20 and abs(tau.eta)<2.3 and abs(tau.dxy) < 1000 and abs(tau.dz) < 0.2 and tau.idMVAOldDMRun2 >= 1 and tau.idDecayMode, # used in cleaning
-                   #tightTau = lambda tau: tau.idMVAOldDMRun2 == 3, # on top of loose
-                   cleanJetsWithTaus = True,
+                   looseTau = lambda tau: _susyEWK_tauId_CBloose(tau), # used in cleaning
+                   tightTau = lambda tau: _susyEWK_tauId_CBtight(tau), # on top of loose
+                   cleanJetsWithTaus = False,
+                   cleanTausWithLoose = True,
                    doVetoZ = False,
                    doVetoLMf = False,
                    doVetoLMt = True,
@@ -194,6 +193,9 @@ from CMGTools.TTHAnalysis.tools.leptonBuilderEWK import LeptonBuilderEWK
 
 MODULES.append( ('leptonBuilderEWK', lambda : LeptonBuilderEWK("Mini")))
 MODULES.append( ('leptonBuilderWZCR_EWK', lambda : LeptonBuilderEWK("Recl")))
+
+from CMGTools.TTHAnalysis.tools.leptonBuilderRA7 import LeptonBuilderRA7
+MODULES.append( ('leptonBuilderRA7', lambda : LeptonBuilderRA7("Mini")))
 
 #--- Tau builder instances
 from CMGTools.TTHAnalysis.tools.TauFakesBuilder import TauFakesBuilder

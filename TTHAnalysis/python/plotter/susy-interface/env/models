@@ -77,6 +77,53 @@ BEGIN::T2tt_SOS
   brcorr      := 0.105/1000.
 ENDDEF
 
+BEGIN::T1tttt
+  masspoints  := susy-interface/scan/masspoints/list_T1tttt.txt
+  xsecfile    := susy-interface/scan/xsec/xsec_GluGlu.txt
+  q2accfile   :=
+  q2accformat := 
+  brcorr      := 1.0
+ENDDEF
+
+BEGIN::T5qqqqWZ
+  masspoints  := susy-interface/scan/masspoints/list_T5qqqqWZ.txt
+  xsecfile    := susy-interface/scan/xsec/xsec_GluGlu.txt
+  q2accfile   :=
+  q2accformat := 
+  brcorr      := 4./9.
+ENDDEF
+
+BEGIN::T6ttWW
+  masspoints  := susy-interface/scan/masspoints/list_T6ttWW.txt
+  xsecfile    := susy-interface/scan/xsec/xsec_sTsB.txt
+  q2accfile   :=
+  q2accformat := 
+  brcorr      := 1.0
+ENDDEF
+
+BEGIN::T6ttHH
+  masspoints  := susy-interface/scan/masspoints/list_T6ttHZ.txt
+  xsecfile    := susy-interface/scan/xsec/xsec_sTsB.txt
+  q2accfile   :=
+  q2accformat := 
+  brcorr      := 0.6*0.6
+ENDDEF
+
+BEGIN::T6ttHZ
+  masspoints  := susy-interface/scan/masspoints/list_T6ttHZ.txt
+  xsecfile    := susy-interface/scan/xsec/xsec_sTsB.txt
+  q2accfile   :=
+  q2accformat := 
+  brcorr      := 0.6*0.4
+ENDDEF
+
+BEGIN::T6ttZZ
+  masspoints  := susy-interface/scan/masspoints/list_T6ttHZ.txt
+  xsecfile    := susy-interface/scan/xsec/xsec_sTsB.txt
+  q2accfile   :=
+  q2accformat := 
+  brcorr      := 0.4*0.4
+
 BEGIN::TChiWZ_SOS
   masspoints  := susy-interface/scan/masspoints/list_TChiNeuWZ_SOS.txt
   xsecfile    := susy-interface/scan/xsec/xsec_ChiNeu.txt

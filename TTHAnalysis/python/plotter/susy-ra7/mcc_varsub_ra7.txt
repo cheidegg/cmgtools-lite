@@ -1,0 +1,39 @@
+LepSel1_(\w+)  : LepSel_\1[0]; AlsoData
+LepSel2_(\w+)  : LepSel_\1[1]; AlsoData
+LepSel3_(\w+)  : LepSel_\1[2]; AlsoData
+LepSel4_(\w+)  : LepSel_\1[3]; AlsoData
+nLepLoose\b : nLepLoose_Mini; AlsoData
+nLepCleaning\b : nLepCleaning_Mini; AlsoData
+nLepFO\b : nLepFO_Mini; AlsoData
+nLepTight\b : nLepTight_Mini; AlsoData
+nJet25\b: nJet25_Mini; AlsoData
+htJet25j\b: htJet25j_Mini; AlsoData
+mhtJet25\b: mhtJet25_Mini; AlsoData
+nJet30\b: nJet30_Mini; AlsoData
+htJet30j\b: htJet30j_Mini; AlsoData
+mhtJet30\b: mhtJet30_Mini; AlsoData
+nJet40\b: nJet40_Mini; AlsoData
+htJet40j\b: htJet40j_Mini; AlsoData
+mhtJet40\b: mhtJet40_Mini; AlsoData
+nBJetLoose25\b: nBJetLoose25_Mini; AlsoData
+nBJetMedium25\b: nBJetMedium25_Mini; AlsoData
+nBJetTight25\b: nBJetTight25_Mini; AlsoData
+nBJetLoose40\b: nBJetLoose40_Mini; AlsoData
+nBJetMedium40\b: nBJetMedium40_Mini; AlsoData
+nBJetTight40\b: nBJetTight40_Mini; AlsoData
+mZ1\b: mZ1_Mini; AlsoData
+minMllAFAS\b: minMllAFAS_Mini; AlsoData
+minMllAFOS\b: minMllAFOS_Mini; AlsoData
+minMllAFSS\b: minMllAFSS_Mini; AlsoData
+minMllSFOS\b: minMllSFOS_Mini; AlsoData
+#mTW\b: ((nLepSel >=3 && LepSel_isTight[0] && LepSel_isTight[1] && LepSel_isTight[2] && LepSel_isTight[3])*mT_4l+(nLepSel >=2 && LepSel_isTight[0] && LepSel_isTight[1] && LepSel_isTight[2] && !LepSel_isTight[3])*mT_3l); AlsoData
+mTW\b: mTcalc(mT_3l, mT_4l, mT_fo_3l, mT_fo_4l, LepSel_isTight[0]+LepSel_isTight[1]+LepSel_isTight[2]+LepSel_isTight[3], nLepSel, LepSel_mcUCSX[0], LepSel_mcUCSX[1], LepSel_mcUCSX[2]); AlsoData
+#SR\b: SR_Loop; AlsoData
+#BR\b: BR_Loop; AlsoData
+#SRsymm\b: SignalRegionSymm(SR,met_pt,htJet30j_Mini) ; AlsoData
+#SR_step1\b: SR_step1(nBJetMedium25_Mini,met_pt,htJet30j_Mini,((nLepSel>3)*mT_4l+(nLepSel==3)*mT_3l),SR,((mll_3l>76 && mll_3l<106) || (mll_4l>76 && mll_4l<106))); AlsoData
+#SR_step2\b: SR_step2(nBJetMedium25_Mini,met_pt,htJet30j_Mini,((nLepSel>3)*mT_4l+(nLepSel==3)*mT_3l),SR,((mll_3l>76 && mll_3l<106) || (mll_4l>76 && mll_4l<106))); AlsoData
+#SR_step3\b: SR_step3(nBJetMedium25_Mini,met_pt,htJet30j_Mini,((nLepSel>3)*mT_4l+(nLepSel==3)*mT_3l),SR,((mll_3l>76 && mll_3l<106) || (mll_4l>76 && mll_4l<106))); AlsoData
+#SR1b2b\b: SR1b2b(SR,(nLepTight_Mini>3)*mT_4l+(nLepTight_Mini==3)*mT_3l)) ; AlsoData
+#SSR4bins\b: SSR4bins(nBJetMedium25_Mini,met_pt,htJet30j_Mini,isOnZ); AlsoData
+#isOnZalt\b: ((mll_3l>76 && mll_3l<106) || (mll_4l>76 && mll_4l<106)); AlsoData

@@ -18,6 +18,7 @@ parser.add_option("--bk",   dest="bookkeeping",  action="store_true", default=Fa
 parser.add_option("--ignore",dest="ignore", type="string", default=[], action="append", help="Ignore processes when loading infile")
 parser.add_option("--noNegVar",dest="noNegVar", action="store_true", default=False, help="Replace negative variations per bin by 0.1% of central value")
 parser.add_option("--hardZero",dest="hardZero", action="store_true", default=False, help="Hard cut-off of processes")
+parser.add_option("--ms",   dest="multiplesignals",  action="store_true", default=False, help="If specified, put all signals into one datacard")
 parser.add_option("--frFile"  ,dest="frFile"  , type="string", default=None, help="Path to the FR file to extract most probable FR for postfix.")
 parser.add_option("--frMap"   ,dest="frMap"   , type="string", default=None, help="Format of the name of the FR map in the FR file, put FL for el/mu")
 parser.add_option("--mpfr"    ,dest="mpfr"    , type="string", default=None, help="Region in the mpfr file to extract most probable FR bin")
@@ -400,6 +401,11 @@ for signal in mca.listSignals():
     myout = outdir
     myout += "%s/" % signal 
     myprocs = ( backgrounds + [ signal ] ) if signal in signals else backgrounds
+    if options.multiplesignals:
+            # I should put a break after the first run, since looping with multiple signals produces multiple times the same card with different column order, but it is not a large overhead (<<1sec).
+            myout = outdir
+            myout += "card/"  
+            myprocs = backgrounds + signals
     if not os.path.exists(myout): os.system("mkdir -p "+myout)
     myyields = dict([(k,v) for (k,v) in allyields.iteritems()]) 
     datacard = open(myout+filename+".card.txt", "w"); 
