@@ -59,6 +59,9 @@ class isoTrackDeDxAnalyzer( Analyzer ):
         
         event.isoTracks = []
         
+        pixelChargeToEnergyCoefficient = 3.61e-6
+        stripChargeToEnergyCoefficient = 3.61e-6 * 265
+        
         for t in event.preselIsoTracks:
             # add more variables
             t.leadAwayJet = leading(cleaned(t,  event.cleanJets, 0.4))
@@ -71,7 +74,15 @@ class isoTrackDeDxAnalyzer( Analyzer ):
             t.closestTau  = closest(t, nearby(t, event.selectedTaus, 0.4))
 
             dedxArray = []
-            for i in xrange(100): dedxArray.append(0)
+            subDetIdArray = []
+            sizeXarray = []
+            sizeYarray = []
+            
+            for i in xrange(100):
+              dedxArray.append(0)
+              subDetIdArray.append(0)
+              sizeXarray.append(0)
+              sizeYarray.append(0)
 
             # get dedx
             if self.cfg_ana.doDeDx:
@@ -86,17 +97,32 @@ class isoTrackDeDxAnalyzer( Analyzer ):
                 mysum = 0
                 
                 for ih in xrange(nhits):
-                    pxclust = dedx.pixelCluster(ih)
-                    if not pxclust: continue
-                    dedxArray[ih] = pxclust.charge()
+                    pixelCluster = dedx.pixelCluster(ih)
+                    stripCluster = dedx.stripCluster(ih)
+                    if pixelCluster:
+                      dedxArray[ih] = pixelCluster.charge()/dedx.pathlength(ih)
+                      # convert number of electrons to MeV
+                      dedxArray[ih] *= pixelChargeToEnergyCoefficient
+                      
+                      sizeXarray[ih] = pixelCluster.sizeX()
+                      sizeYarray[ih] = pixelCluster.sizeY()
+                      
+                      mysum += pixelCluster.charge()
+                    if stripCluster:
+                      dedxArray[ih] = stripCluster.charge()/dedx.pathlength(ih)
+                      # convert number of electrons to MeV
+                      dedxArray[ih] *= stripChargeToEnergyCoefficient
+                    subDetIdArray[ih] = dedx.detId(ih).subdetId()
 
-                    mysum += pxclust.charge()
                 t.myDeDx = mysum
             else:
                 t.myDeDx = 0
 
 
             t.dedxByLayer = dedxArray
+            t.subDetIdByLayer = subDetIdArray
+            t.sizeXbyLayer = sizeXarray
+            t.sizeYbyLayer = sizeYarray
 
             # add a flag for bad ECAL channels in the way of the track
             t.channelsGoodECAL = 1
